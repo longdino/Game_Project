@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css?family=Bungee Inline');
+@import url('https://fonts.googleapis.com/css?family=Finger Paint');
+
+#pagetitle{
+	font-family: 'Bungee Inline';
+	font-size: 40px;
+   	color: antiquewhite;
+}
+
+#objective{
+	color: antiquewhite;
+}
+
+#gamekeys{
+	color: antiquewhite;
+}
+
+h2 {
+	font-family: 'Bungee Inline';
+	font-size: 30px;
+}
+
+p {
+	font-family: 'Finger Paint';
+	color: antiquewhite;
+}
+
+.button {
+	border-radius: 12px;
+	font-family: 'Finger Paint';
+    color: black;
+	background-color: antiquewhite;
+	border: none;
+	text-align: center;
+	display: inline-block;
+	cursor: pointer;
+	-webkit-transition-duration: 0.4s;
+	transition-duration: 0.4s;
+	padding: 10px 25px;
+	font-size: 12px;
+}
+
+.redirect:hover {
+	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.next {
+	display: none;
+	/*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);*/
+}
+
+.prev:hover {
+	/*display: none;*/
+	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+

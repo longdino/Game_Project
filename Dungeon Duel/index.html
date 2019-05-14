@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link href='https://fonts.googleapis.com/css?family=Bungee Inline' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Finger Paint' rel='stylesheet'>
+    <title>Dungeon Duel</title>
+
+</head>
+
+<body onload="startGame()" style="background-color:darkslategray;">
+    <canvas id="ctx" width="800" height="600"></canvas>
+    <center>
+        <!--<div class='button-container'>
+				<button id='mainMenu' class="button" onclick='window.location.href="/"'>Main Menu</button>
+		  </div>-->
+        <div id='gametitle'>
+            <h1>Dungeon Duel</h1>
+        </div>
+    </center>
+
+
+    <div style="height:240px;width:240px;border:1px solid;border-radius: 12px;position: absolute;float: right ;top: 123px;;
+      overflow-y:auto;overflow-x:hidden;right:30px">
+        <ul id="messages" style="border-radius: 12px"></ul>
+        <form action="">
+            <input id="m" autocomplete="off" style="border-radius: 12px" /><br><br><button class="send">Send</button>
+        </form>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script>
+            var clientId = -1;
+            var socket = io();
+            socket.on('id_issuing', function (data) {
+                if (clientId == -1) {
+                    clientId = data[0];
+                    console.log('client id: ' + clientId);
+                    if (data[1] > 4) {
+                        window.location.href = "/too_much_people";
+                    }
+                }
+            })
+            $(function () {
+
+                $('form').submit(function () {
+                    socket.emit('chat message', $('#m').val());
+                    $('#m').val('');
+                    return false;
+                });
+                socket.on('chat message', function (msg) {
+                    $('#messages').append($('<li>').text(msg.name + ": " + msg.message));
+                });
+                $("#m").scrollTop($("#m")[0].scrollHeight);
+            });
+            document.onkeydown = function (event) {
+                if (event.keyCode === 37)  //d
+                    socket.emit('keyPressed', { inputID: 'left', state: true });
+                if (event.keyCode === 39)  //s
+                    socket.emit('keyPressed', { inputID: 'right', state: true });
+                if (event.keyCode === 38)  //a
+                    socket.emit('keyPressed', { inputID: 'up', state: true });
+                if (event.keyCode === 40)  //w
+                    socket.emit('keyPressed', { inputID: 'down', state: true });
+                if (event.keyCode === 87)
+                    socket.emit('keyPressed', { inputID: 'upatk', state: true });
+                if (event.keyCode === 83)
+                    socket.emit('keyPressed', { inputID: 'downatk', state: true });
+                if (event.keyCode === 65)
+                    socket.emit('keyPressed', { inputID: 'leftatk', state: true });
+                if (event.keyCode === 68)
+                    socket.emit('keyPressed', { inputID: 'rightatk', state: true });
+                if (event.keyCode === 81) // q
+                    socket.emit('keyPressed', { inputID: 'q', state: true });
+                if (event.keyCode === 69) // e
+                    socket.emit('keyPressed', { inputID: 'e', state: true });
+            }
+            document.onkeyup = function (event) {
+                if (event.keyCode === 37)  //d
+                    socket.emit('keyPressed', { inputID: 'left', state: false });
+                if (event.keyCode === 39)  //s
+                    socket.emit('keyPressed', { inputID: 'right', state: false });
+                if (event.keyCode === 38)  //a
+                    socket.emit('keyPressed', { inputID: 'up', state: false });
+                if (event.keyCode === 40)  //w
+                    socket.emit('keyPressed', { inputID: 'down', state: false });
+                if (event.keyCode === 87)
+                    socket.emit('keyPressed', { inputID: 'upatk', state: false });
+                if (event.keyCode === 83)
+                    socket.emit('keyPressed', { inputID: 'downatk', state: false });
+                if (event.keyCode === 65)
+                    socket.emit('keyPressed', { inputID: 'leftatk', state: false });
+                if (event.keyCode === 68)
+                    socket.emit('keyPressed', { inputID: 'rightatk', state: false });
+                if (event.keyCode === 81) // q
+                    socket.emit('keyPressed', { inputID: 'q', state: false });
+                if (event.keyCode === 69) // e
+                    socket.emit('keyPressed', { inputID: 'e', state: false });
+                socket.emit('log_key_event', event.keyCode);
+            }
+            //logging front end
+
+            window.addEventListener('keydown', function (e) {
+                switch (e.keyCode) { // Prevent arrow keys from scrolling window
+                    case 37: case 39: case 38: case 40: // Arrow keys
+                    e.preventDefault(); break;
+                    default: break; // do not block other keys
+                }
+            })
+            /*
+            window.addEventListener('keyup', function (e) {
+                keys[e.keyCode] = false;
+            })
+
+            setInterval(
+                
+            , 20);
+            */
+
+            var ctx = document.getElementById("ctx").getContext("2d");
+				
+				var playerName = "Player " + clientId;
+
+            var player1LeftRegular;
+            var player1LeftDamaged;
+            var player1LeftStraightAttack;
+            var player1LeftUpAttack;
+            var player1LeftDownAttack;
+            var player1RightRegular;
+            var player1RightDamaged;
+            var player1RightStraightAttack;
+            var player1RightUpAttack;
+            var player1RightDownAttack;
+
+            var player2LeftRegular;
+            var player2LeftDamaged;
+            var player2LeftStraightAttack;
+            var player2LeftUpAttack;
+            var player2LeftDownAttack;
+            var player2RightRegular;
+            var player2RightDamaged;
+            var player2RightStraightAttack;
+            var player2RightUpAttack;
+            var player2RightDownAttack;
+
+            var player3LeftRegular;
+            var player3LeftDamaged;
+            var player3LeftStraightAttack;
+            var player3LeftUpAttack;
+            var player3LeftDownAttack;
+            var player3RightRegular;
+            var player3RightDamaged;
+            var player3RightStraightAttack;
+            var player3RightUpAttack;
+            var player3RightDownAttack;
+
+            var player4LeftRegular;
+            var player4LeftDamaged;
+            var player4LeftStraightAttack;
+            var player4LeftUpAttack;
+            var player4LeftDownAttack;
+            var player4RightRegular;
+            var player4RightDamaged;
+            var player4RightStraightAttack;
+            var player4RightUpAttack;
+            var player4RightDownAttack;
+
+            var mapOpenSpace;
+            var mapBoss;
+
+            var borderAllClosedImage;
+            const borderAllClosedImageUrl = "Images/Maps/htmlBorder/WallsAllClosedDoorBorder.png";
+            var borderAllOpenImage;
+            const borderAllOpenImageUrl = "Images/Maps/htmlBorder/WallsAllOpenDoorBorder.png";
+            var borderBottomClosedImage;
+            const borderBottomClosedImageUrl = "Images/Maps/htmlBorder/WallsBottomClosedDoorBorder.png";
+            var borderBottomRightClosedImage;
+            const borderBottomRightClosedImageUrl = "Images/Maps/htmlBorder/WallsBottomRightClosedDoorBorder.png";
+            var borderBottomLeftClosedImage;
+            const borderBottomLeftClosedImageUrl = "Images/Maps/htmlBorder/WallsLeftBottomClosedDoorBorder.png";
+            var borderLeftClosedImage;
+            const borderLeftClosedImageUrl = "Images/Maps/htmlBorder/WallsLeftClosedDoorBorder.png";
+            var borderLeftTopClosedImage;
+            const borderLeftTopClosedImageUrl = "Images/Maps/htmlBorder/WallsLeftTopClosedDoorBorder.png";
+            var borderRightClosedImage;
+            const borderRightClosedImageUrl = "Images/Maps/htmlBorder/WallsRightClosedDoorBorder.png";
+            var borderTopClosedImage;
+            const borderTopClosedImageUrl = "Images/Maps/htmlBorder/WallsTopClosedDoorBorder.png";
+            var borderTopRightClosedImage;
+            const borderTopRightClosedImageUrl = "Images/Maps/htmlBorder/WallsTopRightClosedDoorBorder.png";
+
+            var gridImage;
+            var gridClearedSpace;
+            var gridRedSpace;
+            var gridPurpleSpace;
+            var gridGreenSpace;
+            var gridBlueSpace;
+
+            var slimeLeft;
+            var slimeLeftDamaged;
+            var slimeRight;
+            var slimeRightDamaged;
+				
+				var slimeSilverLeft;
+				var slimeSilverLeftDamaged;
+				var slimeSilverRight;
+				var slimeSilverRightDamaged;
+				
+				var slimeDarkLeft;
+				var slimeDarkLeftDamaged;
+				var slimeDarkRight;
+				var slimeDarkRightDamaged;
+
+            var skeletonLeft;
+            var skeletonLeftDamaged;
+            var skeletonRight;
+            var skeletonRightDamaged;
+				
+				var skeletonDarkLeft;
+				var skeletonDarkLeftDamaged;
+				var skeletonDarkRight;
+				var skeletonDarkRightDamaged;
+				
+				var beeLeft;
+				var beeRight;
+
+            var sphereImage;
+				var silverBullet;
+				var darkBullet;
+				
+            var swordImageLeft;
+            var swordImageRight;
+            var swordImageUp;
+            var swordImageDown;
+				
+				var powerSword;
+				var woodenSword;
+
+            var slimeKingLeft;
+            var slimeKingLeftDamaged;
+            var slimeKingRight;
+            var slimeKingRightDamaged;
+				var slimeKingShield;
+				
+            var skeletonKingLeft;
+            var skeletonKingLeftDamaged;
+            var skeletonKingRight;
+            var skeletonKingRightDamaged;
+				var skeletonKingShield;
+				
+				var hiveLeft;
+				
+				var childRegular;
+				var childDamaged;
+				var childAttack;
+				var childShield;
+
+            var itemBarImage;
+            var healthItem;
+            var maxHealthPup;
+            var attackPup;
+            var quickAttackPup;
+            var speedPup;
+
+            // Sound Effects
+				var playerDeath;
+				var punchSound;
+            var playerHit;
+            var slimeHit;
+            var skeletonHit;
+            var itemPickup;
+            var powerupPickup;
+
+            // Music
+				var mainMusic;
+				var slimeBossMusic;
+				var skeletonBossMusic;
+				var hiveBossMusic;
+				var childBossMusic;
+
+            function startGame() {
+                //myGameArea.start();
+                document.getElementById("ctx").style.border = "50px solid";
+
+                mapOpenSpace = new Image();
+                mapOpenSpace.src = "Images/Maps/OpenSpace.png";
+                mapBoss = new Image();
+                mapBoss.src = "Images/Maps/Boss.png";
+
+                borderAllClosedImage = new Image();
+                borderAllClosedImage.src = borderAllClosedImageUrl;
+                borderAllOpenImage = new Image();
+                borderAllOpenImage.src = borderAllOpenImageUrl;
+
+                player1LeftRegular = new Image();
+                player1LeftRegular.src = "Images/Characters/Player1/Left/Regular.png";
+                player1LeftDamaged = new Image();
+                player1LeftDamaged.src = "Images/Characters/Player1/Left/Damaged.png";
+                player1LeftStraightAttack = new Image();
+                player1LeftStraightAttack.src = "Images/Characters/Player1/Left/StraightAttack.png";
+                player1LeftUpAttack = new Image();
+                player1LeftUpAttack.src = "Images/Characters/Player1/Left/UpAttack.png";
+                player1LeftDownAttack = new Image();
+                player1LeftDownAttack.src = "Images/Characters/Player1/Left/DownAttack.png";
+
+                player1RightRegular = new Image();
+                player1RightRegular.src = "Images/Characters/Player1/Right/Regular.png";
+                player1RightDamaged = new Image();
+                player1RightDamaged.src = "Images/Characters/Player1/Right/Damaged.png";
+                player1RightStraightAttack = new Image();
+                player1RightStraightAttack.src = "Images/Characters/Player1/Right/StraightAttack.png";
+                player1RightUpAttack = new Image();
+                player1RightUpAttack.src = "Images/Characters/Player1/Right/UpAttack.png";
+                player1RightDownAttack = new Image();
+                player1RightDownAttack.src = "Images/Characters/Player1/Right/DownAttack.png";
+
+                player2LeftRegular = new Image();
+                player2LeftRegular.src = "Images/Characters/Player2/Left/Regular.png";
+                player2LeftDamaged = new Image();
+                player2LeftDamaged.src = "Images/Characters/Player2/Left/Damaged.png";
+                player2LeftStraightAttack = new Image();
+                player2LeftStraightAttack.src = "Images/Characters/Player2/Left/StraightAttack.png";
+                player2LeftUpAttack = new Image();
+                player2LeftUpAttack.src = "Images/Characters/Player2/Left/UpAttack.png";
+                player2LeftDownAttack = new Image();
+                player2LeftDownAttack.src = "Images/Characters/Player2/Left/DownAttack.png";
+
+                player2RightRegular = new Image();
+                player2RightRegular.src = "Images/Characters/Player2/Right/Regular.png";
+                player2RightDamaged = new Image();
+                player2RightDamaged.src = "Images/Characters/Player2/Right/Damaged.png";
+                player2RightStraightAttack = new Image();
+                player2RightStraightAttack.src = "Images/Characters/Player2/Right/StraightAttack.png";
+                player2RightUpAttack = new Image();
+                player2RightUpAttack.src = "Images/Characters/Player2/Right/UpAttack.png";
+                player2RightDownAttack = new Image();
+                player2RightDownAttack.src = "Images/Characters/Player2/Right/DownAttack.png";
+
+                player3LeftRegular = new Image();
+                player3LeftRegular.src = "Images/Characters/Player3/Left/Regular.png";
+                player3LeftDamaged = new Image();
+                player3LeftDamaged.src = "Images/Characters/Player3/Left/Damaged.png";
+                player3LeftStraightAttack = new Image();
+                player3LeftStraightAttack.src = "Images/Characters/Player3/Left/StraightAttack.png";
+                player3LeftUpAttack = new Image();
+                player3LeftUpAttack.src = "Images/Characters/Player3/Left/UpAttack.png";
+                player3LeftDownAttack = new Image();
+                player3LeftDownAttack.src = "Images/Characters/Player3/Left/DownAttack.png";
+
+                player3RightRegular = new Image();
+                player3RightRegular.src = "Images/Characters/Player3/Right/Regular.png";
+                player3RightDamaged = new Image();
+                player3RightDamaged.src = "Images/Characters/Player3/Right/Damaged.png";
+                player3RightStraightAttack = new Image();
+                player3RightStraightAttack.src = "Images/Characters/Player3/Right/StraightAttack.png";
+                player3RightUpAttack = new Image();
+                player3RightUpAttack.src = "Images/Characters/Player3/Right/UpAttack.png";
+                player3RightDownAttack = new Image();
+                player3RightDownAttack.src = "Images/Characters/Player3/Right/DownAttack.png";
+
+                player4LeftRegular = new Image();
+                player4LeftRegular.src = "Images/Characters/Player4/Left/Regular.png";
+                player4LeftDamaged = new Image();
+                player4LeftDamaged.src = "Images/Characters/Player4/Left/Damaged.png";
+                player4LeftStraightAttack = new Image();
+                player4LeftStraightAttack.src = "Images/Characters/Player4/Left/StraightAttack.png";
+                player4LeftUpAttack = new Image();
+                player4LeftUpAttack.src = "Images/Characters/Player4/Left/UpAttack.png";
+                player4LeftDownAttack = new Image();
+                player4LeftDownAttack.src = "Images/Characters/Player4/Left/DownAttack.png";
+
+                player4RightRegular = new Image();
+                player4RightRegular.src = "Images/Characters/Player4/Right/Regular.png";
+                player4RightDamaged = new Image();
+                player4RightDamaged.src = "Images/Characters/Player4/Right/Damaged.png";
+                player4RightStraightAttack = new Image();
+                player4RightStraightAttack.src = "Images/Characters/Player4/Right/StraightAttack.png";
+                player4RightUpAttack = new Image();
+                player4RightUpAttack.src = "Images/Characters/Player4/Right/UpAttack.png";
+                player4RightDownAttack = new Image();
+                player4RightDownAttack.src = "Images/Characters/Player4/Right/DownAttack.png";
+
+                slimeLeft = new Image();
+                slimeLeft.src = "Images/Characters/Slime/Regular/Left.png";
+                slimeLeftDamaged = new Image();
+                slimeLeftDamaged.src = "Images/Characters/Slime/Regular/LeftDamaged.png";
+                slimeRight = new Image();
+                slimeRight.src = "Images/Characters/Slime/Regular/Right.png";
+                slimeRightDamaged = new Image();
+                slimeRightDamaged.src = "Images/Characters/Slime/Regular/RightDamaged.png";
+					 
+					 slimeSilverLeft = new Image();
+					 slimeSilverLeft.src = "Images/Characters/Slime/Silver/Left.png";
+					 slimeSilverLeftDamaged = new Image();
+					 slimeSilverLeftDamaged.src = "Images/Characters/Slime/Silver/LeftDamaged.png";
+					 slimeSilverRight = new Image();
+					 slimeSilverRight.src = "Images/Characters/Slime/Silver/Right.png";
+					 slimeSilverRightDamaged = new Image();
+					 slimeSilverRightDamaged.src = "Images/Characters/Slime/Silver/RightDamaged.png";
+					 
+					 slimeDarkLeft = new Image();
+					 slimeDarkLeft.src = "Images/Characters/Slime/Dark/Left.png";
+					 slimeDarkLeftDamaged = new Image();
+					 slimeDarkLeftDamaged.src = "Images/Characters/Slime/Dark/LeftDamaged.png";
+					 slimeDarkRight = new Image();
+					 slimeDarkRight.src = "Images/Characters/Slime/Dark/Right.png";
+					 slimeDarkRightDamaged = new Image();
+					 slimeDarkRightDamaged.src = "Images/Characters/Slime/Dark/RightDamaged.png";
+
+                skeletonLeft = new Image();
+                skeletonLeft.src = "Images/Characters/Skeleton/Regular/Left.png";
+                skeletonLeftDamaged = new Image();
+                skeletonLeftDamaged.src = "Images/Characters/Skeleton/Regular/LeftDamaged.png";
+                skeletonRight = new Image();
+                skeletonRight.src = "Images/Characters/Skeleton/Regular/Right.png";
+                skeletonRightDamaged = new Image();
+                skeletonRightDamaged.src = "Images/Characters/Skeleton/Regular/RightDamaged.png";
+					 
+					 skeletonDarkLeft = new Image();
+					 skeletonDarkLeft.src = "Images/Characters/Skeleton/Dark/Left.png";
+					 skeletonDarkLeftDamaged = new Image();
+					 skeletonDarkLeftDamaged.src = "Images/Characters/Skeleton/Dark/LeftDamaged.png";
+					 skeletonDarkRight = new Image();
+					 skeletonDarkRight.src = "Images/Characters/Skeleton/Dark/Right.png";
+					 skeletonDarkRightDamaged = new Image();
+					 skeletonDarkRightDamaged.src = "Images/Characters/Skeleton/Dark/RightDamaged.png";
+
+					 beeLeft = new Image();
+					 beeLeft.src = "Images/Characters/Bee/Left.png";
+					 beeRight = new Image();
+					 beeRight.src = "Images/Characters/Bee/Right.png";
+					 
+                slimeKingLeft = new Image();
+                slimeKingLeft.src = "Images/Characters/Boss/SlimeKing/Left.png";
+                slimeKingLeftDamaged = new Image();
+                slimeKingLeftDamaged.src = "Images/Characters/Boss/SlimeKing/LeftDamaged.png";
+                slimeKingRight = new Image();
+                slimeKingRight.src = "Images/Characters/Boss/SlimeKing/Right.png";
+                slimeKingRightDamaged = new Image();
+                slimeKingRightDamaged.src = "Images/Characters/Boss/SlimeKing/RightDamaged.png";
+					 slimeKingShield = new Image();
+					 slimeKingShield.src = "Images/Characters/Boss/SlimeKing/Shield.png";
+
+                skeletonKingLeft = new Image();
+                skeletonKingLeft.src = "Images/Characters/Boss/SkeletonKing/Left.png";
+                skeletonKingLeftDamaged = new Image();
+                skeletonKingLeftDamaged.src = "Images/Characters/Boss/SkeletonKing/LeftDamaged.png";
+                skeletonKingRight = new Image();
+                skeletonKingRight.src = "Images/Characters/Boss/SkeletonKing/Right.png";
+                skeletonKingRightDamaged = new Image();
+                skeletonKingShield = new Image();
+					 skeletonKingShield.src = "Images/Characters/Boss/SkeletonKing/Shield.png";
+					 
+					 
+					 hiveLeft = new Image();
+					 hiveLeft.src = "Images/Characters/Boss/Beehive/Left.png";
+					 
+					 childRegular = new Image();
+					 childRegular.src = "Images/Characters/Boss/AbandonedChild/Regular.png";
+					 childDamaged = new Image();
+					 childDamaged.src = "Images/Characters/Boss/AbandonedChild/Damaged.png";
+					 childAttack = new Image();
+					 childAttack.src = "Images/Characters/Boss/AbandonedChild/Attack.png";
+					 childShield = new Image();
+					 childShield.src = "Images/Characters/Boss/AbandonedChild/Shield.png";
+
+                sphereImage = new Image();
+                sphereImage.src = "Images/Projectiles/Sphere.png";
+					 silverBullet = new Image();
+					 silverBullet.src = "Images/Projectiles/SilverBullet.png";
+					 darkBullet = new Image();
+					 darkBullet.src = "Images/Projectiles/DarkBullet.png";
+					 
+                swordImageLeft = new Image();
+                swordImageLeft.src = "Images/Weapons/RusticSwordLeft.png";
+                swordImageRight = new Image();
+                swordImageRight.src = "Images/Weapons/RusticSwordRight.png";
+                swordImageUp = new Image();
+                swordImageUp.src = "Images/Weapons/RusticSwordUp.png";
+                swordImageDown = new Image();
+                swordImageDown.src = "Images/Weapons/RusticSwordDown.png";
+					 
+					 woodenSword = new Image();
+					 woodenSword.src = "Images/Weapons/WoodenSwordRight.png";
+					 powerSword = new Image();
+					 powerSword.src = "Images/Weapons/PowerSwordRight.png";
+					 
+                fullHeart = new Image();
+                fullHeart.src = "Images/Misc/Heart/Full.png";
+                halfHeart = new Image();
+                halfHeart.src = "Images/Misc/Heart/Half.png";
+                emptyHeart = new Image();
+                emptyHeart.src = "Images/Misc/Heart/Empty.png";
+                gridImage = new Image();
+                gridImage.src = "Images/Misc/Grid/Map.png";
+                gridClearedSpace = new Image();
+                gridClearedSpace.src = "Images/Misc/Grid/ClearedSpace.png";
+                gridPurpleSpace = new Image();
+                gridPurpleSpace.src = "Images/Misc/Grid/PurpleSpace.png";
+                gridRedSpace = new Image();
+                gridRedSpace.src = "Images/Misc/Grid/RedSpace.png";
+                gridGreenSpace = new Image();
+                gridGreenSpace.src = "Images/Misc/Grid/GreenSpace.png";
+                gridBlueSpace = new Image();
+                gridBlueSpace.src = "Images/Misc/Grid/BlueSpace.png";
+                itemBarImage = new Image();
+                itemBarImage.src = "Images/Misc/ItemBar.png";
+                healthItem = new Image();
+                healthItem.src = "Images/Items/Health.png";
+                maxHealthPup = new Image();
+                maxHealthPup.src = "Images/Items/MaxHealth.png";
+                attackPup = new Image();
+                attackPup.src = "Images/Items/Attack.png";
+                quickAttackPup = new Image();
+                quickAttackPup.src = "Images/Items/QuickAttack.png";
+                speedPup = new Image();
+                speedPup.src = "Images/Items/Speed.png";
+
+					 playerDeath = document.createElement('audio');
+                playerDeath.src = "Audio/playerdeath.mp3";
+					 punchSound = document.createElement('audio');
+					 punchSound.src = "Audio/punchsound.mp3";
+                playerHit = document.createElement('audio');
+                playerHit.src = "Audio/hitplayer.m4a";
+                slimeHit = document.createElement('audio');
+                slimeHit.src = "Audio/hitslime.mp3";
+                skeletonHit = document.createElement('audio');
+                skeletonHit.src = "Audio/hitskull.m4a";
+                itemPickup = document.createElement('audio');
+                itemPickup.src = "Audio/item.m4a";
+                powerupPickup = document.createElement('audio');
+                powerupPickup.src = "Audio/powerup.m4a";
+					 
+					 mainMusic = document.createElement('audio');
+					 mainMusic.src = "Audio/DungeonDuel.mp3";
+					 mainMusic.loop = true;
+					 slimeBossMusic = document.createElement('audio');
+					 slimeBossMusic.src = "Audio/slimeking.mp3";
+					 slimeBossMusic.loop = true;
+					 skeletonBossMusic = document.createElement('audio');
+					 skeletonBossMusic.src = "Audio/skeletonking.mp3";
+					 skeletonBossMusic.loop = true;
+					 hiveBossMusic = document.createElement('audio');
+					 hiveBossMusic.src = "Audio/beehive.mp3";
+					 hiveBossMusic.loop = true;
+					 childBossMusic = document.createElement('audio');
+					 childBossMusic.src = "Audio/childboss.mp3";
+					 childBossMusic.loop = true;
+					 
+					 mainMusic.load();
+					 mainMusic.play();
+					 
+					 playerName = prompt("Please enter your name");
+					 if (playerName.length > 15)
+						playerName = playerName.substring(0, 15);
+					 socket.emit("name", {playerName});
+
+                socket.on("log", function (data) {
+                    console.log(data);
+                });
+
+                socket.on("packages", function (data) {
+                    let clientRoom = -1;
+                    let client_index = -1;
+                    for (let i in data) {
+                        if (data[i].player.id == clientId) {
+                            clientRoom = data[i].player.room;
+                            client_index = i;
+                            break;
+                        }
+                    }
+
+                    ctx.clearRect(0, 0, 800, 600);
+						  
+						  if (data[0].gameover) {
+                        gameover();
+                        return;
+                    }
+						  
+                    if (clientRoom == 16 || clientRoom == 17 || clientRoom == 18 || clientRoom == 19)
+                        ctx.drawImage(mapBoss, 0, 0);
+                    else
+                        ctx.drawImage(mapOpenSpace, 0, 0);
+
+                    let playersInRoomList = []; // playersInRoomList[i] = [[playerType]], store players in each room; used to draw the map
+                    for (let i = 0; i < 16; i++) {
+                        playersInRoomList.push([-1]);
+                    }
+						  
+						  for (let i in data) {
+                        let p = data[i].player;
+                        
+								if (p.room >= 0 && p.room <= 15)
+                           playersInRoomList[p.room].push(p.type);
+						  }
+						  
+						  for (let i in data[client_index].room.enemyList) {
+                        let e = data[client_index].room.enemyList[i];
+                        if (e.alive)
+                            drawEnemy(e.enemyType, e.x, e.y, e.faceDirection, e.angle, e.isHurt, (e.enemyType == 2 || e.enemyType == 3 || e.enemyType == 9) && data[client_index].room.enemiesLeft > 1, e.attacking);
+                    }
+                    
+						  for (let i in data[client_index].bulletList) {
+                        let b = data[client_index].bulletList[i];
+                        drawBullet(b.x, b.y, b.type, b.angle);
+                    }
+
+						  // Draw the map
+                    drawmap(data[client_index].roomList, playersInRoomList);
+
+                    // Draw item on floor 
+                    if (data[client_index].room.itemId != -1 && data[client_index].room.cleared) {
+                        drawItemOnFloor(data[client_index].room.itemId);
+                    }
+
+                    // Draw item bar
+                    drawItemBar(data[client_index].player.itemList[0], data[client_index].player.itemList[1]);
+
+                    if ((clientRoom == 16 || clientRoom == 17 || clientRoom == 18 || clientRoom == 19) && data[client_index].room.enemyList[0].alive) {
+                        let bossHealth = data[client_index].room.enemyList[0].health;
+                        let bossHealthCapacity = data[client_index].room.enemyList[0].healthCapacity;
+                        drawBossHealth(bossHealth, bossHealthCapacity); // health hard coded for slime&skeleton king
+                    }
+
+                    drawtime(data[0].secondsLeft);
+						  
+                    for (let i in data) {
+                        let p = data[i].player;
+                        
+								if (p.room != clientRoom)
+                            continue;
+                        
+								drawBorder(data[i].room.cleared, p.room);
+								
+								if (clientId == p.id) {
+									 drawhealth(p.health, p.healthCapacity);
+									 
+									 if (p.respawnTimeLeft > 0) {
+											let c = document.getElementById('ctx');
+											ctx.save();
+											ctx.font = "30px Finger Paint";
+											ctx.fillStyle = "antiquewhite";
+											ctx.fillText("Respawning in " + p.respawnTimeLeft, c.width/2-100, 70);
+											ctx.restore();
+											continue;
+									 }
+                            
+								} else {
+									if (p.respawnTimeLeft > 0)
+										continue;
+								}
+								
+								drawPlayer(p.x, p.y, p.type, p.direction, p.attackDirection, data[i].attacking, data[i].isHurt);
+								if (clientId != p.id)
+									drawPlayerName(p.x, p.y, p.name);
+                        if (data[i].attacking) {
+                            drawSword(p.attackDirection, p.x, p.y, p.width, p.height, p.direction, p.type);
+                        }
+                    }
+						  
+						  if (data[0].victory) {
+								victory();
+						  }
+                });
+
+                // Audio
+					 socket.on("playerDeath", function (data) {
+						  if (data == clientId) {
+							  playerDeath.load();
+							  playerDeath.play();
+						  }
+					 });
+					 
+                socket.on("playerTakeDamage", function (data) {
+                    if (data == clientId) {
+							  playerHit.load();
+							  playerHit.play();
+						  }
+                });
+
+                socket.on("slimeTakeDamage", function (data) {
+						  if (data == clientId) {
+							  slimeHit.load();
+							  slimeHit.play();
+						  }
+                });
+
+                socket.on("skeletonTakeDamage", function (data) {
+						  if (data == clientId) {
+							  skeletonHit.load();
+							  skeletonHit.play();
+						  }
+                });
+
+                socket.on("itemPickup", function (data) {
+						  if (data == clientId) {
+							  itemPickup.load();
+							  itemPickup.play();
+						  }
+                });
+
+                socket.on("powerupPickup", function (data) {
+						  if (data == clientId) {
+							  powerupPickup.load();
+							  powerupPickup.play();
+						  }
+                });
+					 
+					 socket.on("enterSlimeKing", function (data) {
+							// Stop playing other music
+							mainMusic.pause();
+							mainMusic.currentTime = 0;
+							
+							slimeBossMusic.load();
+							slimeBossMusic.play();
+					 });
+					 
+					 socket.on("enterSkeletonKing", function (data) {
+							// Stop playing other music
+							mainMusic.pause();
+							mainMusic.currentTime = 0;
+							
+							slimeBossMusic.pause();
+							slimeBossMusic.currentTime = 0;
+							
+							skeletonBossMusic.load();
+							skeletonBossMusic.play();
+					 });
+					 
+					 socket.on("enterHive", function (data) {
+							// Stop playing other music
+							mainMusic.pause();
+							mainMusic.currentTime = 0;
+					 
+							skeletonBossMusic.pause();
+							skeletonBossMusic.currentTime = 0;
+							
+							hiveBossMusic.load();
+							hiveBossMusic.play();
+					 });
+					 
+					 socket.on("enterChild", function (data) {
+							// Stop playing other music
+							mainMusic.pause();
+							mainMusic.currentTime = 0;
+					 
+							hiveBossMusic.pause();
+							hiveBossMusic.currentTime = 0;
+							
+							childBossMusic.load();
+							childBossMusic.play();
+					 });
+            }
+
+
+            /*var myGameArea = {
+                canvas: document.createElement("canvas"),
+                start: function () {
+                    this.canvas.width = 800;
+                    this.canvas.height = 600;
+                    this.context = this.canvas.getContext("2d");
+                    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                    //this.interval = setInterval(updateGameArea, 20);
+                },
+                clear: function () {
+                    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+            }*/
+
+            function drawPlayer(x, y, playerType, direction, attackDirection, attacking, isHurt) {
+                if (playerType == 0) {
+                    if (attacking) {
+                        if (attackDirection == 0) {
+                            ctx.drawImage(player1LeftStraightAttack, x, y);
+                        } else if (attackDirection == 1) {
+                            ctx.drawImage(player1RightStraightAttack, x, y);
+                        } else if (attackDirection == 2) {
+                            if (direction == 0)
+                                ctx.drawImage(player1LeftUpAttack, x, y);
+                            else
+                                ctx.drawImage(player1RightUpAttack, x, y);
+                        } else {
+                            if (direction == 0)
+                                ctx.drawImage(player1LeftDownAttack, x, y);
+                            else
+                                ctx.drawImage(player1RightDownAttack, x, y);
+                        }
+                        return;
+                    }
+
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(player1LeftDamaged, x, y);
+                        else
+                            ctx.drawImage(player1LeftRegular, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(player1RightDamaged, x, y);
+                        else
+                            ctx.drawImage(player1RightRegular, x, y);
+                    }
+                } else if (playerType == 1) {
+                    if (attacking) {
+                        if (attackDirection == 0) {
+                            ctx.drawImage(player2LeftStraightAttack, x, y);
+                        } else if (attackDirection == 1) {
+                            ctx.drawImage(player2RightStraightAttack, x, y);
+                        } else if (attackDirection == 2) {
+                            if (direction == 0)
+                                ctx.drawImage(player2LeftUpAttack, x, y);
+                            else
+                                ctx.drawImage(player2RightUpAttack, x, y);
+                        } else {
+                            if (direction == 0)
+                                ctx.drawImage(player2LeftDownAttack, x, y);
+                            else
+                                ctx.drawImage(player2RightDownAttack, x, y);
+                        }
+                        return;
+                    }
+
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(player2LeftDamaged, x, y);
+                        else
+                            ctx.drawImage(player2LeftRegular, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(player2RightDamaged, x, y);
+                        else
+                            ctx.drawImage(player2RightRegular, x, y);
+                    }
+                } else if (playerType == 2) {
+                    if (attacking) {
+                        if (attackDirection == 0) {
+                            ctx.drawImage(player3LeftStraightAttack, x, y);
+                        } else if (attackDirection == 1) {
+                            ctx.drawImage(player3RightStraightAttack, x, y);
+                        } else if (attackDirection == 2) {
+                            if (direction == 0)
+                                ctx.drawImage(player3LeftUpAttack, x, y);
+                            else
+                                ctx.drawImage(player3RightUpAttack, x, y);
+                        } else {
+                            if (direction == 0)
+                                ctx.drawImage(player3LeftDownAttack, x, y);
+                            else
+                                ctx.drawImage(player3RightDownAttack, x, y);
+                        }
+                        return;
+                    }
+
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(player3LeftDamaged, x, y);
+                        else
+                            ctx.drawImage(player3LeftRegular, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(player3RightDamaged, x, y);
+                        else
+                            ctx.drawImage(player3RightRegular, x, y);
+                    }
+                } else if (playerType == 3) {
+                    if (attacking) {
+                        if (attackDirection == 0) {
+                            ctx.drawImage(player4LeftStraightAttack, x, y);
+                        } else if (attackDirection == 1) {
+                            ctx.drawImage(player4RightStraightAttack, x, y);
+                        } else if (attackDirection == 2) {
+                            if (direction == 0)
+                                ctx.drawImage(player4LeftUpAttack, x, y);
+                            else
+                                ctx.drawImage(player4RightUpAttack, x, y);
+                        } else {
+                            if (direction == 0)
+                                ctx.drawImage(player4LeftDownAttack, x, y);
+                            else
+                                ctx.drawImage(player4RightDownAttack, x, y);
+                        }
+                        return;
+                    }
+
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(player4LeftDamaged, x, y);
+                        else
+                            ctx.drawImage(player4LeftRegular, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(player4RightDamaged, x, y);
+                        else
+                            ctx.drawImage(player4RightRegular, x, y);
+                    }
+                }
+            }
+				
+				function drawPlayerName(x, y, name) {
+						ctx.font = "20px Finger Paint";
+						ctx.fillStyle = "black";
+						
+						ctx.fillText(name, x-2*name.length, y+100);
+				}
+
+            function drawSword(direction, x, y, width, height, playerDir, playerType) {
+                if (direction == 0) {
+                    if (playerType == 2) // TODO: fix sword hitbox for player3 (i % 4 == 2)
+                        ctx.drawImage(swordImageLeft, x - 57, y + height / 2 - 15);
+                    else if (playerType == 3) // TODO: fix sword hitbox for player4 (i % 4 == 3)
+                        ctx.drawImage(swordImageLeft, x - 57, y + height / 2 - 10);
+                    else
+                        ctx.drawImage(swordImageLeft, x - 57, y + height / 2 - 20);
+                }
+                if (direction == 1) {
+                    if (playerType == 2) // TODO: fix sword hitbox for player3 (i % 4 == 2)
+                        ctx.drawImage(swordImageRight, x + width, y + height / 2 - 15);
+                    else if (playerType == 3) // TODO: fix sword hitbox for player4 (i % 4 == 3)
+                        ctx.drawImage(swordImageRight, x + width, y + height / 2 - 10);
+                    else
+                        ctx.drawImage(swordImageRight, x + width, y + height / 2 - 20);
+                }
+                if (direction == 2) {
+                    if (playerDir == 0) { // facing left
+                        if (playerType == 3)
+                            ctx.drawImage(swordImageUp, x - 10, y + height / 2 - 73);
+                        else
+                            ctx.drawImage(swordImageUp, x - 10, y + height / 2 - 83);
+                    } else { // facing right
+                        if (playerType == 3)
+                            ctx.drawImage(swordImageUp, x + width - 11, y + height / 2 - 73);
+                        else
+                            ctx.drawImage(swordImageUp, x + width - 11, y + height / 2 - 83);
+                    }
+                }
+                if (direction == 3) {
+                    if (playerDir == 0) { // facing left
+                        if (playerType == 3) // TODO: fix sword hitbox for player4 (i % 4 == 3)
+                            ctx.drawImage(swordImageDown, x - 9, y + height / 2 + 10);
+                        else
+                            ctx.drawImage(swordImageDown, x - 9, y + height / 2);
+                    } else { // facing right
+                        if (playerType == 3) // TODO: fix sword hitbox for player4 (i % 4 == 3)
+                            ctx.drawImage(swordImageDown, x + width - 10, y + height / 2 + 10);
+                        else
+                            ctx.drawImage(swordImageDown, x + width - 10, y + height / 2);
+                    }
+                }
+            }
+
+            function drawEnemy(enemyType, x, y, direction, angle, isHurt, hasShield, isAttacking) {
+                if (enemyType == 0) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(slimeLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(slimeRightDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeRight, x, y);
+                    }
+                } else if (enemyType == 1) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(skeletonLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(skeletonLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(skeletonRightDamaged, x, y);
+                        else
+                            ctx.drawImage(skeletonRight, x, y);
+                    }
+                } else if (enemyType == 2) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(slimeKingLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeKingLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(slimeKingRightDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeKingRight, x, y);
+                    }
+						  
+						  // Draw Shield
+						  if (hasShield) {
+								ctx.save(); // Save current context settings
+								ctx.globalAlpha = 0.7; // Lower opacity
+								ctx.drawImage(slimeKingShield, x-40, y-40);
+								ctx.restore(); // Restore context settings
+						  }
+                } else if (enemyType == 3) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(skeletonKingLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(skeletonKingLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(skeletonKingRightDamaged, x, y);
+                        else
+                            ctx.drawImage(skeletonKingRight, x, y);
+                    }
+						  
+						  // Draw Shield
+						  if (hasShield) {
+								ctx.save(); // Save current context settings
+								ctx.globalAlpha = 0.7; // Lower opacity
+								ctx.drawImage(skeletonKingShield, x-35, y-10);
+								ctx.restore(); // Restore context settings;
+						  }
+                } else if (enemyType == 4) {
+							// Rotates image based on angle property
+							// Source: https://www.youtube.com/watch?v=5L9vCeNarDE
+							// Note from Justin: I'm not sure how this works, but it works...
+						  
+						  ctx.save();
+						  ctx.translate(x + 35/2, y + 28/2); // 35 is width of bee image, 28 is height of bee image
+						  if (angle > Math.PI/2 || angle < -1*Math.PI/2) {
+								ctx.rotate(angle - Math.PI);
+								ctx.drawImage(beeLeft, -1 * 35/2, -1 * 28/2);
+						  } else {
+								ctx.rotate(angle);
+								ctx.drawImage(beeRight, -1 * 35/2, -1 * 28/2);
+						  }
+						  ctx.restore();
+                } else if (enemyType == 5) {
+							ctx.drawImage(hiveLeft, x, y);
+					 } else if (enemyType == 6) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(slimeSilverLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeSilverLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(slimeSilverRightDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeSilverRight, x, y);
+                    }
+                } else if (enemyType == 7) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(slimeDarkLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeDarkLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(slimeDarkRightDamaged, x, y);
+                        else
+                            ctx.drawImage(slimeDarkRight, x, y);
+                    }
+                } else if (enemyType == 8) {
+                    if (direction == 0) {
+                        if (isHurt)
+                            ctx.drawImage(skeletonDarkLeftDamaged, x, y);
+                        else
+                            ctx.drawImage(skeletonDarkLeft, x, y);
+                    } else {
+                        if (isHurt)
+                            ctx.drawImage(skeletonDarkRightDamaged, x, y);
+                        else
+                            ctx.drawImage(skeletonDarkRight, x, y);
+                    }
+                } else if (enemyType == 9) {
+							if (isHurt)
+								ctx.drawImage(childDamaged, x, y);
+							else if (isAttacking)
+								ctx.drawImage(childAttack, x, y);
+							else
+								ctx.drawImage(childRegular, x, y);
+							
+							// Draw Shield
+						  if (hasShield) {
+								ctx.save(); // Save current context settings
+								ctx.globalAlpha = 0.7; // Lower opacity
+								ctx.drawImage(childShield, x-28, y-30);
+								ctx.restore(); // Restore context settings;
+						  }
+					 }
+            }
+
+            function drawBullet(x, y, type, angle) {
+					if (type == 0)
+						ctx.drawImage(sphereImage, x, y);
+					else if (type == 1)
+						ctx.drawImage(silverBullet, x, y);
+					else if (type == 2)
+						ctx.drawImage(darkBullet, x, y);
+					else if (type == 3) {
+						ctx.save();
+						ctx.translate(x + 62/2, y + 24/2);
+						ctx.rotate(angle);
+						ctx.drawImage(woodenSword, -1 * 62/2, -1 * 24/2);
+						ctx.restore();
+					} else if (type == 4) {
+					ctx.save();
+						ctx.translate(x + 67/2, y + 21/2);
+						ctx.rotate(angle);
+						ctx.drawImage(swordImageRight, -1 * 67/2, -1 * 21/2);
+						ctx.restore();
+					} else if (type == 5) {
+						ctx.save();
+						ctx.translate(x + 69/2, y + 22/2);
+						ctx.rotate(angle);
+						ctx.drawImage(powerSword, -1 * 67/2, -1 * 21/2);
+						ctx.restore();
+					}
+            }
+
+            function drawBorder(cleared, i) {
+                let c = document.getElementById("ctx");
+                if (!cleared) {
+                    c.style.borderImage = "url(" + borderAllClosedImageUrl + ") 43";
+                    return;
+                }
+                if (i == 0)
+                    c.style.borderImage = "url(" + borderLeftTopClosedImageUrl + ") 43";
+                else if (i == 3)
+                    c.style.borderImage = "url(" + borderTopRightClosedImageUrl + ") 43";
+                else if (i == 12)
+                    c.style.borderImage = "url(" + borderBottomLeftClosedImageUrl + ") 43";
+                else if (i == 15)
+                    c.style.borderImage = "url(" + borderBottomRightClosedImageUrl + ") 43";
+                else if (i == 1 || i == 2)
+                    c.style.borderImage = "url(" + borderTopClosedImageUrl + ") 43";
+                else if (i == 13 || i == 14)
+                    c.style.borderImage = "url(" + borderBottomClosedImageUrl + ") 43";
+                else if (i == 4 || i == 8)
+                    c.style.borderImage = "url(" + borderLeftClosedImageUrl + ") 43";
+                else if (i == 7 || i == 11)
+                    c.style.borderImage = "url(" + borderRightClosedImageUrl + ") 43";
+                else
+                    c.style.borderImage = "url(" + borderAllOpenImageUrl + ") 43";
+            }
+
+            function drawhealth(health, healthCapacity) {
+                // Draw full hearts
+                for (let i = 0; i < Math.floor(health); i++) {
+                    ctx.drawImage(fullHeart, i * 45 + 10, 5);
+                }
+                // Draw half heart if needed
+                if (Math.floor(health) < health) {
+                    ctx.drawImage(halfHeart, Math.floor(health) * 45 + 10, 5);
+                }
+                // Draw empty hearts
+                for (let i = Math.ceil(health); i < healthCapacity; i++) {
+                    ctx.drawImage(emptyHeart, i * 45 + 10, 5);
+                }
+            }
+
+            function drawmap(roomList, playersInRoomList) {
+                ctx.save(); // Save current context settings
+                ctx.globalAlpha = 0.5; // Lower opacity
+                ctx.drawImage(gridImage, 800 - 85, 0); // Draw map
+
+                // Fill in map squares
+                for (let i = 0; i <= 15; i++) {
+                    let gridX = 800 - (21 * (4 - (i % 4))) - 1;
+                    let gridY = 20 * Math.floor(i / 4) + 1;
+                    if (playersInRoomList[i].length > 1) {
+                        let playerType = playersInRoomList[i][1];
+                        if (playerType == 0)
+                            ctx.drawImage(gridRedSpace, gridX, gridY);
+                        else if (playerType == 1)
+                            ctx.drawImage(gridPurpleSpace, gridX, gridY);
+                        else if (playerType == 2)
+                            ctx.drawImage(gridGreenSpace, gridX, gridY);
+                        else if (playerType == 3)
+                            ctx.drawImage(gridBlueSpace, gridX, gridY);
+                    } else if (roomList[i].cleared)
+                        ctx.drawImage(gridClearedSpace, gridX, gridY);
+                }
+                ctx.restore(); // Restore context settings (reset opacity)
+            }
+
+            function drawItemBar(itemLeft, itemRight) {
+                ctx.save(); // Save current context settings
+                ctx.globalAlpha = 0.5; // Lower opacity
+                let c = document.getElementById('ctx');
+                ctx.drawImage(itemBarImage, 20, c.height - 55);
+                // Draw Q and E labels
+                ctx.font = "30px Finger Paint";
+                ctx.fillStyle = "antiquewhite";
+                ctx.fillText("Q", 45, c.height - 65);
+                ctx.fillText("E", 115, c.height - 65);
+                ctx.restore(); // Restore context settings (reset opacity)
+
+                if (itemLeft == 0) {
+                    ctx.drawImage(healthItem, 40, c.height - 45);
+                }
+
+                if (itemRight == 0) {
+                    ctx.drawImage(healthItem, 110, c.height - 45);
+                }
+            }
+
+            function drawBossHealth(bossHealth, bossHealthMax) {
+                let c = document.getElementById('ctx');
+					 
+                ctx.save(); // Save current context settings
+                ctx.globalAlpha = 0.5; // Lower opacity
+					 ctx.fillStyle = "black";
+                ctx.fillRect(180, c.height - 56, c.width - 320, 50);
+                ctx.fillStyle = "#FF0000";
+					 
+                let percentage = Math.floor((c.width - 320 - 12) * bossHealth / bossHealthMax)
+					 
+                ctx.fillRect(180 + 6, c.height - 56 + 6, percentage, 50 - 12);
+                ctx.restore();
+            }
+
+            function drawItemOnFloor(itemId) {
+                let c = document.getElementById('ctx');
+                let x = c.width / 2 - 17;
+                let y = c.height / 2 - 30;
+					 
+                if (itemId == 0) {
+                    ctx.drawImage(healthItem, x, y);
+                } else if (itemId == 1) {
+                    ctx.drawImage(maxHealthPup, x, y);
+                } else if (itemId == 2) {
+                    ctx.drawImage(attackPup, x, y);
+                } else if (itemId == 3) {
+                    ctx.drawImage(quickAttackPup, x, y);
+                } else if (itemId == 4) {
+                    ctx.drawImage(speedPup, x, y);
+                }
+            }
+
+
+            function gameover() {
+                window.location.href = "/gameover";
+            }
+				
+				function victory() {
+					 ctx.font = "40px Finger Paint";
+					 ctx.fillStyle = "antiquewhite";
+					 let c = document.getElementById('ctx');
+					 ctx.fillText("A WINNER IS YOU", c.width/2-150, c.height/2);
+					 ctx.font = "25px Finger Paint";
+					 ctx.fillText("Go back to the Main Menu to play again!", c.width/2-250, c.height/2+150);
+				}
+
+            function drawtime(secondsLeft) {
+					 if (secondsLeft < 0)
+							return;
+							
+                ctx.font = "35px Finger Paint";
+					 ctx.fillStyle = "black";
+					 let minutes = Math.floor(secondsLeft / 60);
+					 let seconds = secondsLeft % 60;
+					 
+					 if (minutes == 0) {
+							if (seconds < 10) {
+								ctx.fillStyle = "antiquewhite";
+								ctx.fillText("Entering boss room in " + seconds, 180, document.getElementById('ctx').height/2-120);
+							}
+							else
+								ctx.fillText(" :" + seconds, 370, 30);
+					 } else {
+							if (seconds < 10)
+								ctx.fillText(minutes + ":0" + seconds, 370, 30);
+							else
+								ctx.fillText(minutes + ":" + seconds, 370, 30);
+					 }
+					 
+            }
+        </script>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="stylesheet" type="text/css" href="how_to_play_pg2.css">
+	<link href='https://fonts.googleapis.com/css?family=Bungee Inline' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Finger Paint' rel='stylesheet'>
+	 <script>
+			function home() {
+				window.location.href = "/";
+			}
+			function next() {
+				window.location.href = "/howtoplay2";
+			}
+			function prev() {
+				window.location.href = "/howtoplay";
+			}
+	 </script>
+	<title> Dungeon Duel </title>
+</head>
+
+<body style="background-color:darkslategray">
+<center>
+	<div id='pagetitle'><h1>How to Play</h1></div>
+	<div class="character">
+		<img src="Images/Characters/Player1/Right/Regular.png">
+		<img src="Images/Characters/Player2/Right/Regular.png">
+		<img src="Images/Characters/Player3/Right/Regular.png">
+		<img src="Images/Characters/Player4/Right/Regular.png">
+		<p>There will be 4 players maximum to enter the game.</p>
+	</div>
+	<div class="Monsters">
+		<img src="Images/Characters/Slime/Regular/Right.png">
+		<img src="Images/Characters/Skeleton/Regular/Right.png">
+		<img src="Images/Characters/Boss/SlimeKing/Right.png">
+		<img src="Images/Characters/Boss/SkeletonKing/Right.png">
+		<p>There are monsters to eliminate to proceed to the next room.<p>
+	</div>
+	<br>
+	<div class="items">
+		<img src="Images/Items/Attack.png">
+		<img src="Images/Items/Health.png">
+		<img src="Images/Items/MaxHealth.png">
+		<img src="Images/Items/QuickAttack.png">
+		<img src="Images/Items/Speed.png">
+		<p>You can power up by using these items above.</p>
+		<p>You can gain the items by killing the monsters.</p>
+	</div>
+	<br><br>
+	<button onclick="home()" class="button redirect">Home</button>
+	<button onclick="prev()" class="button prev">Previous</button>
+	<button onclick="next()" class="button next">Next</button>
+</center>
+</body>
+
+</html>

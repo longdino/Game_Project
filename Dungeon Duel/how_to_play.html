@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="stylesheet" type="text/css" href="how_to_play.css">
+	<link href='https://fonts.googleapis.com/css?family=Bungee Inline' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Finger Paint' rel='stylesheet'>
+	 <script>
+			function home() {
+				window.location.href = "/";
+			}
+		 	function next() {
+				window.location.href = "/howtoplay2";
+			}
+			function prev() {
+				window.location.href = "/howtoplay";
+			}
+	 </script>
+	<title> Dungeon Duel </title>
+</head>
+
+<body style="background-color:darkslategray">
+<center>
+	<div id='pagetitle'><h1>How to Play</h1></div>
+	<div id='objective'>
+		<h2>Objective</h2>
+		<p>To win the game kill the other player. Gather power ups from clearing rooms to become stronger. 
+		<br>Once every room is cleared both players will face off in a match to the death!</p>
+	</div>
+	<div id='gamekeys'>
+		<h2>Game Keys</h2>
+		<p>Move with the ARROW KEYS</p>
+		<p>Use items with "Q" and "E"</p>
+		<p>Attack with "W", "A", "S", and "D"</p>
+	</div>
+	<button onclick="home()" class="button redirect">Home</button>
+	<button onclick="prev()" class="button prev">Previous</button>
+	<button onclick="next()" class="button next">Next</button>
+</center>
+</body>
+
+</html>
